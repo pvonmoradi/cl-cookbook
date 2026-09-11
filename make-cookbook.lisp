@@ -166,3 +166,53 @@
 (defun generate ()
   (reset-target)
   (build-full-source))
+
+(defun check-release ()
+  ;; --- checking metadata.txt ---
+  (let* ((fname "metadata.txt")
+         (ctime (multiple-value-list (get-decoded-time)))
+         (cyear  (write-to-string (nth  5 ctime)))
+         (months (list "January" "February" "March"
+                       "April"   "May"      "June"
+                       "July"    "August"   "September"
+                       "October" "November" "December"))
+         (cmonth (nth (1- (nth 4 ctime)) months))
+         (f (uiop:read-file-string fname)))
+    (format t "~%---Checking ~A---~&" fname)
+    (unless
+        (ppcre:register-groups-bind
+         (month year)
+         ("rights: © (\\w+) (\\d{4})" f)
+         (unless (and (string= cmonth month)
+                      (string= cyear year))
+           (format t "Mismatched date string in '~A':~&  Expected: ~A ~A~&  Actual  : ~A ~A~&"
+                   fname cmonth cyear month year)
+           (uiop:quit 2))
+         t)
+      (format t "Malformed date string in '~A'~&" fname)
+      (uiop:quit 2)))
+
+  ;; --- checking contributors.md ---
+  (let* ((fname "contributors.md")
+         (s_str "The contributors on Github are:")
+         (e_str "(this list is sorted by number of commits)")
+         (f (uiop:read-file-string fname))
+         (target_str
+          (ppcre:scan-to-strings (format nil "(?s)~A(.*?)~A" s_str e_str) f))
+         (commiters_actual
+          (ppcre:all-matches-as-strings "(?m)^\\*\\ .*" target_str))
+         (commiters_expected
+          (remove ""
+                  (uiop:split-string
+                   (uiop:run-program
+                    "git shortlog -sn HEAD | cut -f 2 | sed s/^/'* '/g"
+                    :force-shell t :output :string)
+                   :separator '(#\Newline))
+                  :test #'string=))
+         (commiters_new (set-difference commiters_expected commiters_actual
+                                        :test #'equal)))
+    (format t "~&---Checking ~A ---~&" fname)
+    (unless (null commiters_new)
+      (format t "Missing committers in '~A':~&" fname)
+      (format t "~{~A~%~}~&" commiters_new)
+      (uiop:quit 2))))

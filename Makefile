@@ -20,3 +20,6 @@ sample-pdf: clean
 
 epub+pdf: epub
 	sbcl --load make-cookbook.lisp --eval '(to-pdf)' --eval '(uiop:quit)'
+
+check-release:
+	sbcl --noinform --non-interactive --load make-cookbook.lisp --eval '(check-release)' --eval '(uiop:quit)'
