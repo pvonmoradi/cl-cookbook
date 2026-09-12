@@ -373,10 +373,9 @@ It provides:
 - Jupyter REPL integration
 - rainbow brackets support
 
-As of writing, you need to build the editor plugin (the LSP,
-tree-sitter and Jupyter Rust crates), so you need a Rust toolchain.
+zed-cl ships releases for Linux, MacOS and Windows.
 
-*It is likely that this extension was assembled with the help of LLMs*.
+*This extension was assembled with the help of LLMs*.
 
 
 ## Geany (experimental)
