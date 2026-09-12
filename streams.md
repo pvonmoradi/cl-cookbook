@@ -3,7 +3,8 @@ title: Streams
 ---
 
 Streams are the standard abstraction for input and output in
-Common Lisp. Every time you read from a file, write to the
+Common Lisp. They are an interface to an I/O device.
+Every time you read from a file, write to the
 terminal, or communicate over a network socket, you are using
 a stream.
 
